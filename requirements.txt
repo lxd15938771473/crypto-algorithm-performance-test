@@ -36,3 +36,12 @@ configparser==6.0.0
 # 系统监控
 py-cpuinfo==9.0.0
 GPUtil==1.4.0
+
+# Web服务器和API
+Flask==2.3.2
+Flask-CORS==4.0.0
+Werkzeug==2.3.6
+
+# Web服务器生产环境（可选）
+gunicorn==21.2.0
+waitress==2.1.2
