@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码算法性能测试工具</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            height: calc(100vh - 200px);
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .algorithm-group {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .algorithm-group:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .algorithm-group h4 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background-color: #e2e8f0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .system-info {
+            background: #f0fff4;
+            border: 2px solid #68d391;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .system-info h4 {
+            color: #22543d;
+            margin-bottom: 10px;
+        }
+
+        .system-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .system-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #c6f6d5;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .results-content {
+            min-height: 400px;
+        }
+
+        .result-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .result-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .log-container {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f7fafc;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #68d391;
+        }
+
+        .status-dot.running {
+            background: #fbb6ce;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> 密码算法性能测试工具</h1>
+            <p>专业的密码学算法基准测试平台 - 简单点击即可开始测试</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <!-- 系统信息 -->
+                <div class="system-info">
+                    <h4><i class="fas fa-desktop"></i> 系统信息</h4>
+                    <div class="system-info-grid" id="systemInfo">
+                        <div class="system-info-item">
+                            <span>CPU:</span>
+                            <span id="cpuInfo">检测中...</span>
+                        </div>
+                        <div class="system-info-item">
+                            <span>内存:</span>
+                            <span id="memoryInfo">检测中...</span>
+                        </div>
+                        <div class="system-info-item">
+                            <span>Python:</span>
+                            <span id="pythonInfo">检测中...</span>
+                        </div>
+                        <div class="system-info-item">
+                            <span>状态:</span>
+                            <span id="systemStatus">就绪</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 算法选择 -->
+                <div class="section">
+                    <h3><i class="fas fa-cogs"></i> 算法选择</h3>
+                    
+                    <div class="algorithm-group">
+                        <h4><i class="fas fa-lock"></i> 对称加密算法</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="aes" checked>
+                                <label for="aes">AES</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="des">
+                                <label for="des">DES</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="des3">
+                                <label for="des3">3DES</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="chacha20">
+                                <label for="chacha20">ChaCha20</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-group">
+                        <h4><i class="fas fa-key"></i> 非对称加密算法</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="rsa">
+                                <label for="rsa">RSA</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ecc">
+                                <label for="ecc">ECC</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="ecdsa">
+                                <label for="ecdsa">ECDSA</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="algorithm-group">
+                        <h4><i class="fas fa-hashtag"></i> 哈希算法</h4>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sha256" checked>
+                                <label for="sha256">SHA-256</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="sha512">
+                                <label for="sha512">SHA-512</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="md5">
+                                <label for="md5">MD5</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="blake2b">
+                                <label for="blake2b">Blake2b</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 测试设置 -->
+                <div class="section">
+                    <h3><i class="fas fa-sliders-h"></i> 测试设置</h3>
+                    <div class="settings-grid">
+                        <div class="input-group">
+                            <label for="iterations">迭代次数</label>
+                            <input type="number" id="iterations" value="100" min="10" max="10000">
+                        </div>
+                        <div class="input-group">
+                            <label for="dataSize">数据大小</label>
+                            <select id="dataSize">
+                                <option value="1024">1 KB</option>
+                                <option value="8192">8 KB</option>
+                                <option value="65536" selected>64 KB</option>
+                                <option value="1048576">1 MB</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="outputFormat">输出格式</label>
+                            <select id="outputFormat">
+                                <option value="json">JSON</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="threadCount">线程数</label>
+                            <select id="threadCount">
+                                <option value="1" selected>1</option>
+                                <option value="2">2</option>
+                                <option value="4">4</option>
+                                <option value="8">8</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控制按钮 -->
+                <div class="button-group">
+                    <button class="btn btn-primary" id="startTest">
+                        <i class="fas fa-play"></i>
+                        开始测试
+                    </button>
+                    <button class="btn btn-secondary" id="stopTest" disabled>
+                        <i class="fas fa-stop"></i>
+                        停止测试
+                    </button>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="exportResults">
+                        <i class="fas fa-download"></i>
+                        导出结果
+                    </button>
+                    <button class="btn btn-secondary" id="clearResults">
+                        <i class="fas fa-trash"></i>
+                        清除结果
+                    </button>
+                </div>
+
+                <!-- 进度指示器 -->
+                <div class="progress-bar" id="progressContainer" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <!-- 状态指示器 -->
+                <div class="status-indicator" id="statusIndicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">就绪</span>
+                </div>
+            </div>
+
+            <!-- 结果面板 -->
+            <div class="results-panel">
+                <h3><i class="fas fa-chart-bar"></i> 测试结果</h3>
+                
+                <div class="results-content" id="resultsContent">
+                    <div style="text-align: center; margin-top: 100px; color: #718096;">
+                        <i class="fas fa-chart-line" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                        <p style="font-size: 1.2rem;">选择算法并点击"开始测试"来查看性能结果</p>
+                    </div>
+                </div>
+
+                <!-- 实时日志 -->
+                <div class="log-container" id="logContainer" style="display: none;">
+                    <div id="logContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="web/js/main.js"></script>
+</body>
+</html>
