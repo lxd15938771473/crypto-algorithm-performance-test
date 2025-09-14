@@ -1,0 +1,102 @@
+# 密码算法性能测试配置文件
+
+# 测试参数
+test_settings:
+  # 测试数据大小 (字节)
+  data_sizes: [1024, 8192, 65536, 1048576]  # 1KB, 8KB, 64KB, 1MB
+  # 每个测试的重复次数
+  iterations: 100
+  # 预热轮数
+  warmup_rounds: 10
+  # 超时时间 (秒)
+  timeout: 300
+
+# 对称加密算法
+symmetric_algorithms:
+  aes:
+    enabled: true
+    key_sizes: [128, 192, 256]  # bits
+    modes: ['CBC', 'ECB', 'CTR', 'GCM']
+  
+  des:
+    enabled: true
+    key_sizes: [64]
+    modes: ['CBC', 'ECB']
+  
+  des3:
+    enabled: true  
+    key_sizes: [192]
+    modes: ['CBC', 'ECB']
+    
+  chacha20:
+    enabled: true
+    key_sizes: [256]
+    modes: ['ChaCha20']
+
+# 非对称加密算法  
+asymmetric_algorithms:
+  rsa:
+    enabled: true
+    key_sizes: [1024, 2048, 3072, 4096]
+    
+  ecc:
+    enabled: true
+    curves: ['secp256r1', 'secp384r1', 'secp521r1']
+    
+  ecdsa:
+    enabled: true
+    curves: ['secp256r1', 'secp384r1', 'secp521r1']
+
+# 哈希函数
+hash_algorithms:
+  sha256:
+    enabled: true
+    
+  sha512:
+    enabled: true
+    
+  sha1:
+    enabled: true
+    
+  md5:
+    enabled: true
+    
+  blake2b:
+    enabled: true
+    
+  blake2s:
+    enabled: true
+
+# 性能测试指标
+metrics:
+  # 吞吐量 (MB/s)
+  throughput: true
+  # 延迟 (ms)
+  latency: true
+  # CPU使用率
+  cpu_usage: true
+  # 内存使用量
+  memory_usage: true
+  # 每秒操作数
+  operations_per_second: true
+
+# 输出设置
+output:
+  # 生成图表
+  generate_charts: true
+  # 生成HTML报告
+  generate_html_report: true
+  # 保存原始数据
+  save_raw_data: true
+  # 比较历史结果
+  compare_with_history: false
+
+# 多线程测试
+threading:
+  enabled: true
+  thread_counts: [1, 2, 4, 8, 16]
+  
+# 系统监控
+monitoring:
+  enabled: true
+  sample_interval: 0.1  # 秒
